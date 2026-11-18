@@ -19,7 +19,7 @@ const COLOR_PANEL := Color("#1b2b32")
 const COLOR_PANEL_EDGE := Color("#40545b")
 const COLOR_TEXT := Color("#f2e7ca")
 const COLOR_MUTED := Color("#a8b6b5")
-var board: MissionBoard
+var board: MissionBoardScript
 var phase := "campaign"
 var current_mission := 1
 var selected_mission := 1

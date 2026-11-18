@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  godot-headless-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot 4.7.2
+        run: |
+          curl -sSL "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip" -o godot.zip
+          unzip -q godot.zip
+          sudo mv Godot_v4.7.2-stable_linux.x86_64 /usr/local/bin/godot
+          sudo chmod +x /usr/local/bin/godot
+          godot --version
+
+      - name: Run Campaign Headless Test Suite
+        run: |
+          godot --headless --path game --script res://tests/campaign_test.gd 2>&1 | tee test_out.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script|Assertion failed" test_out.log; then
+            echo "Detected GDScript runtime/parse errors!"
+            exit 1
+          fi
+
+      - name: Verify Cold-Boot Scene Load
+        run: |
+          godot --headless --path game --quit-after 10 2>&1 | tee boot_out.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script" boot_out.log; then
+            echo "Detected cold-boot parse/load errors!"
+            exit 1
+          fi
